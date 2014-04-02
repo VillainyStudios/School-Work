@@ -20,8 +20,7 @@ $gamesPlayed = 0
 $win = 0
 $lose = 0
 $tie = 0
-$playerCard1 = 0
-$playerCard2 = 0
+$playerCards = " "
 $startGame = "False"                 #Variable used to determine if the game is played
 $playerBusted = "False"              #Variable used to track when the player busts
 $playerHand = 0                      #Stores the current value of the player's hand
@@ -45,7 +44,7 @@ function Get-Permission {
         Write-Host " Welcome to the" -ForegroundColor Blue
         Write-Host ""
         Write-Host ""
-        Write-Host " P O W E R S H E L L   B L A C K J A C K   G A M E"` -ForegroundColor Blue
+        Write-Host " P O W E R S H E L L   B L A C K J A C K   G A M E" -ForegroundColor Blue
         Write-Host ""
         Write-Host ""
         Write-Host ""
@@ -86,7 +85,7 @@ function Check-Registry {
     if ($regKey -eq "True") {  #If the registry value is set to true display
                                #closing splash screen
         Write-Host "`n`n`n"
-        Write-Host " P O W E R S H E L L   B L A C K J A C K`n`n`n"` -ForegroundColor Blue
+        Write-Host " P O W E R S H E L L   B L A C K J A C K`n`n`n" -ForegroundColor Blue
         Write-Host "      Developed by Joseph Preston`n`n"
         Write-Host "             Copyright 2014`n`n`n`n"
         Write-Host ""
@@ -111,9 +110,8 @@ function Play-Game {
 
 #This function deals the player and computer's initial hands
 function Deal-Hand {
-    $script:playerCard1 = Get-Card
-    $script:playerCard2 = Get-Card
-    $script:playerHand = $playerCard1 + $playerCard2
+    Get-NewCard
+    Get-NewCard
     
     $computerCard1 = Get-Card
     $computerCard2 = Get-Card
@@ -202,7 +200,8 @@ function Get-PlayerHand {
         Write-Host ""
         Write-Host " CURRENT HAND:"
         Write-Host "`n"
-        Write-Host " Player Hand Total: $playerHand   $playerCard1  $playerCard2  $script:tempCardArray"
+        Write-Host " Player Hand Total: $playerHand"   
+        Write-Host " These cards have been dealt: $playerCards"
         Write-Host ""
         Write-Host " Computer Hand Total:  $computerHand"
         Write-Host ""
@@ -258,6 +257,7 @@ function Get-NewCard {
     $tempCard = Get-Card   #Get a new card for the player
 
     #Add the value of the new card to the player's hand
+    $script:playerCards = $script:playerCards + " " + $tempCard
     $script:playerHand = $script:playerHand + $tempCard
 }  #End Get-NewCard
 
@@ -302,6 +302,8 @@ while ($playAgain -eq "True") {
     else {  #Player did not enter Q, so let's keep playing
         $playAgain = "True"
         $playerBusted = "False"
+        $playerHand = 0
+        $playerCards = " "
         $script:gamesPlayed++
     }  #End else
 }  #End while
