@@ -181,7 +181,7 @@ function Get-PlayerHand {
         #Display the player and computer's current hands
         Write-Host "`n`n"
         Write-Host ""
-        Write-Host " CUURENT HAND:"
+        Write-Host " CURRENT HAND:"
         Write-Host "`n"
         Write-Host " Player Hand:    $playerHand"
         Write-Host ""
