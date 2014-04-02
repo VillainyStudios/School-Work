@@ -16,6 +16,12 @@
 
 # Intialization Section
 
+$gamesPlayed = 0
+$win = 0
+$lose = 0
+$tie = 0
+$playerCard1 = 0
+$playerCard2 = 0
 $startGame = "False"                 #Variable used to determine if the game is played
 $playerBusted = "False"              #Variable used to track when the player busts
 $playerHand = 0                      #Stores the current value of the player's hand
@@ -105,22 +111,29 @@ function Play-Game {
 
 #This function deals the player and computer's initial hands
 function Deal-Hand {
-    $script:playerHand = Get-Card #*2
-    $script:computerHand = Get-Card #*2
+    $script:playerCard1 = Get-Card
+    $script:playerCard2 = Get-Card
+    $script:playerHand = $playerCard1 + $playerCard2
+    
+    $computerCard1 = Get-Card
+    $computerCard2 = Get-Card
+    $script:computerHand = $computerCard1 + $computerCard2 
+
 } #End Deal-Hand
 
 #This function retrieves a random number representing a card and returns the value
 #of that card back to the calling statement
 function Get-Card {
-    $number = 0
+        $number = 0
+        $ace = 11
 
-    #Generate the game's random number (between 1-13)
-    $number = $randomNo.Next(1, 14)
+        #Generate the game's random number (between 1-13)
+        $number = $randomNo.Next(1, 14)
 
-    if ($number -eq 1) {$number = 11} #Represents an ace !!!FIX FOR 1 OR 11!!!
-    if ($number -gt 10) {$number = 10} #Represents a Jack, Queen, or King
+        if ($number -eq 1) {$number = $ace} #Represents an Ace
+        if ($number -gt 10) {$number = 10} #Represents a Jack, Queen, or King
 
-    $number #Return the number back to the calling statements
+        $number #Return the number back to the calling statements
 } #End Get-Card
 
 #This function is responsible for managing the computer's hand
@@ -148,20 +161,25 @@ function Analyze-Results {
     #See if the player busted
     if ($playerBusted -eq "True") {
         Write-Host "`a You have gone bust." -ForegroundColor Blue
+        $script:lose++
     } #End if
     else {  #See if computer busted
         if ($computerHand -gt 21) {
             Write-Host "`a The computer has gone bust." -ForegroundColor Blue
+            $script:win++
         } #End if
         else {  #Neither the player nor the computer busted so look for a winner
             if ($playerHand -gt $computerHand) {
                 Write-Host "`a You Win!" -ForegroundColor Blue
+                $script:win++
             } #End if
             if ($playerHand -eq $computerHand) {
                 Write-Host "`a Tie!" -ForegroundColor Blue
+                $script:tie++
             } #End if
             if ($playerHand -lt $computerHand) {
                 Write-Host "`a Computer Wins!" -ForegroundColor Blue
+                $script:lose++
             } #End if
         } #End else
     } #End else
@@ -172,6 +190,7 @@ function Analyze-Results {
 function Get-PlayerHand {
     $keepGoing = "True"  #Control the execution of the loop that manages the player's hand
 
+    $cardResponse = ""   #Store Ace response
     $response = ""       #Store the player's response
 
     #Loop until a valid reply is collected
@@ -183,9 +202,9 @@ function Get-PlayerHand {
         Write-Host ""
         Write-Host " CURRENT HAND:"
         Write-Host "`n"
-        Write-Host " Player Hand:    $playerHand"
+        Write-Host " Player Hand Total: $playerHand   $playerCard1  $playerCard2  $script:tempCardArray"
         Write-Host ""
-        Write-Host " Computer Hand:  $computerHand"
+        Write-Host " Computer Hand Total:  $computerHand"
         Write-Host ""
         Write-Host ""
         Write-Host ""
@@ -195,8 +214,22 @@ function Get-PlayerHand {
         Write-Host ""
         Write-Host ""
         
+        if ($cardResponse -eq "") {
+            if (($playerCard1 -eq $script:ace) -or ($playerCard2 -eq $script:ace)) {
+                $cardResponse = Read-Host "`n`n`n`n`n`n`n Would you like to make your Ace a 1 or an 11? (1/11)"
+
+                #Validate player's input
+                if ($cardResponse -eq 1) {
+                    $script:ace = 1  #Get another card for the player
+                }  #End if
+                elseif ($cardResponse -eq 11) {
+                    $script:ace = 11
+                }  #End else if
+            } #End if
+        } #End if
+        
         #Prompt the player to take another card
-        $response = Read-Host "`n`n`n`n`n`n`n Do you want another card? (Y/N)"
+        $response = Read-Host "`n`n`n`n`n`n`n Do you want another card or to see the game statistics? (Y/N/S)"
         
         #Validate player's input
         if ($response -eq "Y") {
@@ -206,6 +239,9 @@ function Get-PlayerHand {
             $keepGoing = "False"
             Clear-Host
         }  #End else if
+        elseif ($response -eq "S") {
+            Display-Stats
+        } #End else if
 
         if ($playerHand -gt 21) {
             $script:playerBusted = "True"
@@ -217,13 +253,32 @@ function Get-PlayerHand {
 #This function is called whenever the player elects to get a new card and is responsible
 #for updating the value of the player's hand
 function Get-NewCard {
-    $tempCard = 0  #Stores the value of the player's new card
+    $tempCard =   #Stores the value of the player's new card
 
-    $tempCard = Get-Card  #Get a new card for the player
+    $tempCard = Get-Card   #Get a new card for the player
 
     #Add the value of the new card to the player's hand
     $script:playerHand = $script:playerHand + $tempCard
 }  #End Get-NewCard
+
+#Function to display game statistics
+function Display-Stats {
+    #Display the game statistics
+    Write-Host "`n`n`n Game Statistics`n"
+    Write-Host " -----------------------------------`n"
+    Write-Host "`n Number of games played: $gamesPlayed"
+    Write-Host "`n Number of games won: $script:win"
+    Write-Host "`n Number of games lost: $script:lose"
+    Write-Host "`n Number of games tied: $script:tie`n"
+    Write-Host " -----------------------------------"
+    
+
+    #Pause the game until the player presses the Enter key
+    Read-Host " Press Enter to continue."
+
+    #Clear the Windows command console screen
+    Clear-Host
+}
 
 # Main Processing Section
 
@@ -232,15 +287,21 @@ Get-Permission  #Call the function that asks the player for permission to start 
 #Continue playing new games until the player decides to quit the game
 while ($playAgain -eq "True") {
     Play-Game  #Call the function that controls the play of the individual games
-
+    
     #Prompt player to play a new game
-    $response = Read-Host "`n`n`n`n`n`n`n`n`n`n Press Enter to play again or Q to quit"
+    $response = Read-Host "`n`n`n`n`n`n`n`n`n`n Press Enter to play again, S to see the game statistics, or Q to quit"
     if ($response -eq "Q") {  #The player wants to quit
         $playAgain = "False"
+        Display-Stats
+        Read-Host " Press Enter to quit."
         Clear-Host
     }  #End if
+    elseif ($response -eq "S") {
+        Display-Stats
+    }
     else {  #Player did not enter Q, so let's keep playing
         $playAgain = "True"
         $playerBusted = "False"
+        $script:gamesPlayed++
     }  #End else
 }  #End while
